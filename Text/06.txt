@@ -1,0 +1,87 @@
+dplyr 패키지 이용해서 '데이터 전처리'하기
+
+* dplyr 패키지는 %>%(파이프 연산자)를 이용해 함수를 나열하는 방식으로 코드를 작성.
+단축키는 Ctrl + Shift + m
+
+# 조건에 맞는 데이터만 추출하기
+filter(조건)
+: 조건에 해당하는 행만 추출
+예시) exam %>% filter(class == 1)
+
+|
+: 'or'를 의미
+
+&
+: 'and'를 의미
+
+%in%
+: 매치 연산자(Matcthing Operator)
+변수의 값이 지정한 조건 목록에 해당하는지 확인
+예시) exam %>% filter(class %in% c(1,2,3)
+
+# 필요한 변수만 추출하기
+select(변수명)
+: 원하는 변수(열)만 추출, 여러 개를 추출할 때는 ','로 구분.
+예시) exam %>% select(math) # math만 추출
+        exam %>% select(-english) # english 제외
+        exam %>% select(math, english)
+
+# dplyr 함수 조합하기
+%>%를 이용해 조합!
+예시) exam %>% filter(class == 1) %>% select(math)
+
+줄바꿈
+exam %>%
+    filter(class == 1) >%>
+    select(math)
+
+일부만 출력하기
+exam %>%
+    filter(class == 1) >%>
+    head
+* 괄호 안에 숫자를 입력하면 입력한 숫자만큼 행이 출력되고 안 쓰면 6행까지만!
+
+# 순서대로 정렬하기
+arrange(변수)
+: 오름 차순으로 변수를 정렬
+예시) exam %>% arrange(math)
+
+내림 차순으로 정렬하고 싶으면... desc() 사용하기
+예시) exam %>% arrange(desc(math))
+
+# 파생변수 추가하기
+mutate(변수명 = 공식)
+: 기존 데이터에서 파생변수를 만들어 추가
+예시) exam %>% mutate(total = math + english + science)
+
+','로 구분하여 한 번에 여러 파생변수를 만들 수 있음
+예시) exam %>%
+	mutate(total = math + english + science,
+	          mean = (math + english + science)/3) 
+
+공식 부분에 ifelse를 사용할 수 있음
+예시) exam %>%
+	mutate(text = ifelse(math >= 60, "pass", "fail")
+
+# 집단별로 요약하기
+group_by(변수)
+: 변수 항목 별로 데이터를 분리.
+','로 구분해서 두 개 이상의 변수를 기준으로 데이터 분리 가능
+
+summarise(이름 = 공식)
+: 데이터 전체를 요약한 값 구하기
+group_by()와 같이 쓰이고 요약 통계량 함수와 같이 쓰임.
+
+예시) exam %>%j
+	group_by(class) %>%
+	summarise(mean_math = mean(math))
+
+# 데이터 합치기
+left_join(합칠 데이터 프레임 이름들, by=변수)
+: 변수를 기준으로 데이터 프레임을 가로로 합침.
+예시) left_join(test1, test2, by="id")
+
+bind_rows(합칠 데이터 프레임 이름들)
+: 데이터 프레임을 세로로 합침.
+데이터 프레임의 변수들 이름이 동일해야 가능.
+예시) bind_rows(group_a, group_b)

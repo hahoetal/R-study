@@ -1,0 +1,55 @@
+'ggplot2' package (grammar of graphics)
+: 데이터를 시각화할 때 사용하는 패키지로 ggplot 객체(canvas)에 여러 층(layer)을 쌓아가면서 그래프를 완성시킴.
+층을 쌓기 위한 함수 호출 시 '+' 연산자를 이용해 연결.
+
+* aesthetic
+: 그래프의 시각적 특성에 대한 지시로... 상속되거나 geom level에서 명시됨.
+
+(The aesthetics are visual instructions you provide the plot.Aesthetics can be inherited or specified at the geom level.
+Aesthetic mappings are data-driven visual instructions for the plot.)
+
+* gemetries 또는 geoms
+: 데이터를 표현하는 방식으로 ggplot 객체에 layer로써 더해짐.
+
+그래프의 시각적 기하학적 특성을 결정하는 방식
+1. mapping / aes() 사용.
+    1) ggplot 객체를 생성할 때 (At the canvas level)
+	canvas 다음에 오는 모든 레이어들은 aesthetic mapping을 상속받음.
+	예시) viz <- ggplot(data = airquality, aes(x=Ozone, y = Temp))
+
+    2) ggplot 객체 생성 이후 (At the geom level)
+	예시) viz <- ggplot(data = airquality) + geom_point(aes(x=Ozone, y=Temp, color=Ozone))
+
+2. manually / 인수로써 넣어줌.
+    예시) viz <- ggplot(data = airquality, aes(x=Ozone, y=Temp)) + 
+	geom_point(color="darkred")
+	
+함수들~
+- ggplot(data = df_variable) 또는 ggplot(data frame)
+: ggplot 객체를 생성. 그래프를 그릴 도화지(canvas)를 생성한다고 이해..
+
+- aes()
+: aesthetic mapping 함수로 ggplot의 argument(인수)로 쓰일 수 있음.
+cavas 수준에서 할당된 aesthetic mapping의 내용은 점을 찍거나 곡선을 그릴 때, 척도로써 사용됨.
+geome 수준에서도 aesthetic mapping을 만들 수 있음. 색깔 같은거..
+
+- geom_point()
+: 점을 찍어줌.
+color, x, y, alpha(투명도), fill, group, shape, size, stroke 등을 설정할 수 있음.
+
+- geom_smooth()
+: 곡선을 그려줌.
+
+- geom_bar()
+: 막대그래프를 그려줌.
+
+- labs()
+: x,y축 이름, 표의 제목 및 부제목 등을 추가하거나 기본값 변경.
+    예시) viz <- ggplot(df, aes(x=rent, y=size_sqft)) + 
+       	geom_point() +
+       	labs(title="Monthly Rent vs Apartment Size in Brooklyn, NY",
+		subtitle="Data by StreetEasy (2017)",
+		x="Monthly Rent ($)", y="Apartment Size (sq ft.)")
+
+- ggsave("파일이름.확장자")
+: 사용자가 원하는 이름으로 시각화한 데이터를 저장.

@@ -1,0 +1,79 @@
+R을 이용해 데이터를 분석하기 전에는 항상 데이터가 분석에 적합하도록 명확하고 간결하게 정리되어 있는지 확인.
+
+@ 데이터가 명확하고 깔끔한지 확인할 때, 사용할 수 있는 함수들
+- head() : 데이터 테이블에서 가장 위에 있는 6개의 열들을 보여줌.
+- summary() : 표의 통계량을 요약해서 보여줌.
+- colnames() : 표의 열 이름을 보여줌.
+
+@ 여러 파일에서 데이터를 불어와서 사용하기
+* readr, dplyr 패키지를 불러온 상태에서 시작~*
+
+1. R 내장 함수인 list.files를 이용해서 파일들을 백터 형태로 가져오기.
+	예시) 이름이 exams_N이고 확장자가 .csv인 파일들 가져오기
+	student_files <- list.files(pattern = "exams_.*csv")
+
+2. lapply()로 각 파일에서 데이터를 읽고 readr 패키지의 read_csv()를 이용해 읽어온 데이터를 데이터 프레임 형태로 바꾸기.
+	예시) df_list <- lapply(student_files, read_csv)
+
+3. bind_rows()로 각 데이터 프레임을 하나로 묶어주기.
+	예시) students <- bind_rows(df_list)
+
+*nrow(dataframe)
+: 데이터 프레임의 행 개수를 반환.
+
+*count(column_name)
+: 해당 열에 포함된 값이 몇 개씩 있는지 알려줌.
+
+* table()
+: 값을 테이블 형태로 보여줌.
+
+* str(dataframe)
+: 데이터 프레임에 포함된 열들의 데이터 타입을 테이블 형태로 보여줌.
+
+* gsub(pattern, replacement, x, ignore.case=F)
+: 해당 패턴을 가지는 문자열을 x에서 발견하여 replacement로 바꾸어줌.
+	예시) fruit %>%
+	 	mutate(price = gsub('\\$', '', price)) # price에서 $을 발견하면 공백으로 변경
+
+* as.numeric(column_name)
+: 자료형을 numeric으로 변경
+	예시)fruit %>%
+		mutate(price = as.numeric(price)) # as.numeric() 단독으로 쓰면 에러...
+
+@ 데이터의 중복 제거하기
+- duplicated()
+: 이전 행과 동일한 열에 동일한 값을 가지고 있으면 True를 반환하고, 다르면 False를 반환.
+	예시) fruits %>% duplicated()
+
+- distinct()
+: 이전 행과 중복되는 행을 삭제.
+	예시) fruits %>% distinct() # 이전 행과 동일한 열에 동일한 값을 가진 행을 삭제
+	        fruits %>% distinct(item, .keep_all=True) # item에 대해 동일한 값을 가진, 중복되는 행이 있다면 삭제.
+
+ @ 'tidyr' 패키지
+: 데이터 프레임의 형태를 변환시킬 때 사용하는 패키지.
+
+- gather('col_1_to_gather', 'col_2_to_gather', key='col_name_variables', value='col_name_values')
+: 데이터 프레임에서 각각의 열로 구분된 데이터를 하나의 열로 묶어주고 싶을 때 사용.
+	예시) Checking, Saving으로 구분된 열을 Account Type이라는 하나의 열로 묶고 Checking과 Saving의 값들은 Amount란 이름을 가진 열로 묶기. 
+	       df %>% 
+		gather('Checking', 'Savings', key='Account Type', value='Amount')
+
+@ 'stringr' 패키지
+: 문자열을 다룰 때 사용하는 패키지.
+
+- str_sub(string, starting_index, ending_index)
+: 부분 문자열 만들기
+	예시) 연월일(ex.19981220)이 담긴 birthday를 year, month, day로 나누고자 함.
+		df %>%
+		    mutate(year = str_sub(birthday,1,4),
+			month = str_sub(birthday,5,6)
+			day = str_sub(birthday, 7)
+
+- separate(col_to_separate, c('new_col_name_1', 'new_col_name_2), 'character_to_split_on', extra = 'merge')
+: 특정 문자를 기준으로 부분 문자열 만들기.
+	예시) 학생들의 이름을 성과 이름으로 나누기~ 
+		students <- students %>%
+  			separate(full_name, c('first_name', 'last_name'), ' ', extra='merge') 
+			# 학생들이 중간 성 또는 이름을 가질 수 있기 때문에 extra='merge'를 넣어준다. 두 번째 성 또는 이름은 last_name에 들어감.
+ 

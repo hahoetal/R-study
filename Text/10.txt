@@ -1,0 +1,123 @@
+텍스트 마이닝(Text mining)
+: 문자로 된 데이터에서 가치있는 정보를 얻어내는 분석 기법.
+문장을 구성하는 어절이 어떤 품사로 구성되었는지 파악(형태소 분석, Morphology Analysis)하고,
+명사, 동사, 형용사 등 의미를 지닌 품사의 단어를 추출해 각 단어가 얼마나 많이 등장했는지 확인.
+텍스트 마이닝을 이용해 사람들이 작성한 글을 분석하면, 사람들이 어떤 이야기를 나누고 어떤 생각을 하는지 알 수 있음.
+
+텍스트 마이닝
+
+1) 준비(필요한 패캐지 설치)
+- Java 설치
+: 한글 자연어 분석 패키지인 KoNLP를 사용하기 위해 필요.
+
+- KoNLP(Korean National Language Processing)
+:  한글 자연어 분석 패키지.
+
+- rJava
+- memoise
+
+# 필요한 패키지 설치
+install.packages("rJava")
+install.packages("memoise")
+install.packages("KoNLP")
+
+# 패키지 불러오기
+library(KoNLP)
+library(dplyr)
+
+2) 사전 설정
+KoNLP에서 98만여 개의 단어로 구성된 NIA 사전을 지원.
+형태소를 분석하는데 해당 사전을 이용하도록 설정.
+
+useNIADic()
+
+3) 데이터 불러오기
+    예시)
+        txt <- readLine("hiphop.txt")
+        head(txt)
+
+4) 특수문자 제거
+- 문장에 이모티콘이나 특수문자가 포함되어 있으면 오류가 발생할 수 있음.
+- '\\W'는 특수문자를 의미하는 정규 표현식('Regular Expression').
+- stringr 패키지의 str_replace_all() 함수 이용.
+
+    예시)
+        install.packages("stringr")
+        library(stringr)
+        
+        txt <- str_replace_all(txt, "\\W", " ") # txt에서 특수문자를 발견하면 공백으로 바꾸기.
+
+
+가장 많이 사용된 단어 알아보기
+
+1) 명사 추출하기
+- extractNoun(text)
+: 문장에서 명사 추출
+
+    예시)
+        extractNoun("대한민국의 영토는 한반도와 그 부속도서로 한다")
+	## [1] "대한민국"  "영토"  "한반도"  "부속도서"  "한"
+
+2) 추출한 단어의 리스트를 가지고 빈도표를 만들고 데이터프레임으로 변환.
+(테이블 형태인 빈도표보다 데이터프레임이 데이터를 다루는데 있어 더 편리)
+
+    예시)
+        nouns <- extractNoun(txt) # 문장에서 명사를 추출하고, 명사를 리스트 형태로 반환.
+
+        wordcount <- table(unlist(nouns)) # 리스트를 해제하여 문자열 벡터로 변환한 다음, 테이블(빈도표)로 만들어줌 
+
+        df_word <- as.data.frame(wordcount, stringAsFactors = F) # 분석에 용이하게 테이블을 데이터프레임으로 변경, Factor형으로 바꾸지 않게 stringAsFactors도 넣어주기
+
+        df_word <- rename(df_word,
+                                    word = Var1,
+                                    freq = Freq) # 변수명 수정
+
+3) 자주 사용된 단어 빈도표 만들기
+- nchar()
+: 문자열의 길이...
+
+    예시)
+        df_word <- filter(df_word, nchar(word) >= 2) # 두 글자 이상인 단어만 가져오기
+
+        top_20 <- df_word %>%
+             arrange(desc(freq)) %>%
+             head(20)
+
+4) 워드 클라우드 만들기
+- 워드 클라우드(Word cloud)
+: 단어의 빈도를 구름 모양으로 표현한 그래프.
+단어의 빈도에 따라 크기와 색을 다르게 표현하기 때문에 어떤 단어가 얼마나 많이 사용되었는지 한눈에 파악이 가능.
+
+1) 준비
+- wordcloud 패키지 설치 및 가져오기
+- RColorBrewer(R 내장 패키지) 패키지 가져오기
+
+install.packages("wordcloud")
+
+library(wordcloud)
+library(RColorBrewer)
+
+2) 색상 목록 만들기
+    예시)
+        pal <- brewer.pal(8, "Dark2") # Dark2 색상 목록에서 8개 색깔 추출.
+
+3) 난수 고정
+- wordcloud()함수는 실행할 때마다 난수(무작위로 생성한 수)를 이용해 매번 다른 모양의 워드 클라우드를 만들어 냄.
+- 항상 동일한 모양의 wordcloud를 만들려면 난수 고정이 필요함.
+- set.seed()로 고정
+
+    예시)
+        set.seed(1234)
+
+4) 워드 클라우드 만들기
+- wordcloud()의 parameter들을 이용해 워드 클라우드의 모양 지정.
+
+    예시)
+        wordcloud(words = df_word$word, # 워드 클라우드를 만들 때 사용할 단어
+                       freq = df_word$freq, # 빈도
+                       min.freq = 2, # 최소 단어 빈도
+                       max.words = 200, # 표현할 단어의 수
+                       random.order = F, # 고빈도 단어를 중앙에 배치
+                       rot.per = .1, # 회전 단어 비율
+                       scale = c(4, 0.3), # 단어 크기 범위
+                       colors = pal) # 단어의 색

@@ -15,7 +15,7 @@ library(RColorBrewer) # R 내장 패키지, 색상
 useNIADic() # 사전 설정.
 
 # 분석
-twitter <- read.csv("twitter.csv",
+twitter <- read.csv("C:/Users/yeong/OneDrive/바탕 화면/R_study/data/twitter.csv",
                     header = T,
                     stringsAsFactors = F,
                     fileEncoding = "UTF-8") # 데이터 읽어오기
